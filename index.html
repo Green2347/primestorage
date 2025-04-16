@@ -132,15 +132,17 @@
     function renderPosts() {
       const postArea = document.getElementById('posts');
       postArea.innerHTML = '';
-      posts.filter(p => p.topic === selectedTopic).forEach((p, index) => {
-        let postHTML = `<div class='post-box'>
-          <div class='post'><strong>${p.nickname}</strong> (${p.date})<br>${p.content}</div>
-          <div class='comment-box'>
-            <textarea id='comment-${index}' placeholder='Write a comment...'></textarea>
-            <button onclick='addComment(${index})'>Comment</button>
-          </div>
-        </div>`;
-        postArea.innerHTML += postHTML;
+      posts.forEach((p, index) => {
+        if (p.topic === selectedTopic) {
+          let postHTML = `<div class='post-box'>
+            <div class='post'><strong>${p.nickname}</strong> (${p.date})<br>${p.content}</div>
+            <div class='comment-box'>
+              <textarea id='comment-${index}' placeholder='Write a comment...'></textarea>
+              <button onclick='addComment(${index})'>Comment</button>
+            </div>
+          </div>`;
+          postArea.innerHTML += postHTML;
+        }
       });
     }
 
