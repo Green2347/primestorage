@@ -1,44 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyCYWqv4Odpcy_Dvk3AZT_wKCFuBqhtvAeI",
-    authDomain: "primenumber-study.firebaseapp.com",
-    projectId: "primenumber-study",
-    storageBucket: "primenumber-study.firebasestorage.app",
-    messagingSenderId: "797472595550",
-    appId: "1:797472595550:web:814c082c266be5e423decf",
-    measurementId: "G-WEFY4L52NG"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
-<script>
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "firebase/app";
-  import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCYWqv4Odpcy_Dvk3AZT_wKCFuBqhtvAeI",
-    authDomain: "primenumber-study.firebaseapp.com",
-    projectId: "primenumber-study",
-    storageBucket: "primenumber-study.firebasestorage.app",
-    messagingSenderId: "797472595550",
-    appId: "1:797472595550:web:814c082c266be5e423decf",
-    measurementId: "G-WEFY4L52NG"
-  };
-</script>
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
   <meta charset="UTF-8">
   <title>Community Blog: Riemann Hypothesis</title>
   <style>
@@ -85,42 +47,111 @@ const analytics = getAnalytics(app);
     <button onclick="submitChat()">Send</button>
   </div>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js"></script>
+
   <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYWqv4Odpcy_Dvk3AZT_wKCFuBqhtvAeI",
+      authDomain: "primenumber-study.firebaseapp.com",
+      projectId: "primenumber-study",
+      storageBucket: "primenumber-study.firebasestorage.app",
+      messagingSenderId: "797472595550",
+      appId: "1:797472595550:web:814c082c266be5e423decf",
+      measurementId: "G-WEFY4L52NG"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     let posts = [];
     let chatMessages = [];
     let selectedTopic = '';
+    let promptNickname = '';
 
+    // Submit a post
     function submitPost() {
       const nickname = document.getElementById('nickname').value.trim();
       const content = document.getElementById('postContent').value.trim();
       const date = new Date().toLocaleString();
       if (!nickname || !content) return alert("Please enter a nickname and content.");
       posts.push({ topic: selectedTopic, nickname, content, date, comments: [] });
+
+      // Save to Firestore
+      db.collection('posts').add({
+        nickname: nickname,
+        content: content,
+        date: date,
+        topic: selectedTopic
+      });
+
       document.getElementById('postContent').value = "";
       renderPosts();
     }
 
+    // Submit chat
+    function submitChat() {
+      const nickname = document.getElementById('chatNickname').value.trim();
+      const message = document.getElementById('chatInput').value.trim();
+      if (!nickname || !message) return alert("닉네임과 메시지를 입력해주세요.");
+
+      // Save to Firestore
+      db.collection('chatMessages').add({
+        nickname: nickname,
+        message: message,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      document.getElementById('chatInput').value = "";
+      renderChat();
+    }
+
+    // Load posts from Firestore
+    function loadPosts() {
+      db.collection('posts').where("topic", "==", selectedTopic)
+        .orderBy("date")
+        .onSnapshot(snapshot => {
+          posts = snapshot.docs.map(doc => doc.data());
+          renderPosts();
+        });
+    }
+
+    // Load chat messages from Firestore
+    function loadChat() {
+      db.collection('chatMessages')
+        .orderBy("timestamp")
+        .onSnapshot(snapshot => {
+          chatMessages = snapshot.docs.map(doc => doc.data());
+          renderChat();
+        });
+    }
+
+    // Render posts
     function renderPosts() {
       const postArea = document.getElementById('posts');
       postArea.innerHTML = '';
-      posts.filter(p => p.topic === selectedTopic).forEach((p, index) => {
+      posts.forEach((p, index) => {
         let postHTML = `<div class='post-box'>
           <div class='post'><strong>${p.nickname}</strong> (${p.date})<br>${p.content}</div>
           <div class='comment-box'>
             <textarea id='comment-${index}' placeholder='Write a comment...'></textarea>
             <button onclick='addComment(${index})'>Comment</button>
-            ${p.comments.map((c, i) => `<div class='comment'><strong>${c.nickname}</strong> (${c.date}${c.edited ? ', 수정됨' : ''})<br>${c.text}
-              <div class='comment-actions'>
-                <span class='comment-button' onclick='likeComment(${index}, ${i})'>👍</span>
-                ${c.nickname === promptNickname ? `<span class='comment-button' onclick='editComment(${index}, ${i})'>✏️</span><span class='comment-button' onclick='deleteComment(${index}, ${i})'>🗑️</span>` : ''}
-              </div>
-            </div>`).join('')}
           </div>
         </div>`;
         postArea.innerHTML += postHTML;
       });
     }
 
+    // Render chat messages
+    function renderChat() {
+      const chatBox = document.getElementById('chatMessages');
+      chatBox.innerHTML = chatMessages.map(c => `<div class='chat-message'><strong>${c.nickname}</strong>: ${c.message}</div>`).join('');
+    }
+
+    // Add comment
     function addComment(postIndex) {
       const text = document.getElementById(`comment-${postIndex}`).value.trim();
       const nickname = prompt("닉네임을 입력하세요:");
@@ -130,65 +161,15 @@ const analytics = getAnalytics(app);
       renderPosts();
     }
 
-    function likeComment(postIdx, commentIdx) {
-      alert('공감 버튼이 눌렸습니다.');
-    }
-
-    function editComment(postIdx, commentIdx) {
-      const newText = prompt("댓글을 수정하세요:", posts[postIdx].comments[commentIdx].text);
-      if (newText) {
-        posts[postIdx].comments[commentIdx].text = newText;
-        posts[postIdx].comments[commentIdx].edited = true;
-        renderPosts();
-      }
-    }
-
-    function deleteComment(postIdx, commentIdx) {
-      if (confirm("댓글을 삭제하시겠습니까?")) {
-        posts[postIdx].comments.splice(commentIdx, 1);
-        renderPosts();
-      }
-    }
-
-    function submitChat() {
-      const nickname = document.getElementById('chatNickname').value.trim();
-      const message = document.getElementById('chatInput').value.trim();
-      if (!nickname || !message) return alert("닉네임과 메시지를 입력해주세요.");
-      chatMessages.push({ nickname, message });
-      document.getElementById('chatInput').value = "";
-      renderChat();
-    }
-
-    function renderChat() {
-      const chatBox = document.getElementById('chatMessages');
-      chatBox.innerHTML = chatMessages.map((c, i) => `<div class='chat-message'><strong>${c.nickname}</strong>: ${c.message}<div class='chat-actions'><span class='comment-button' onclick='alert("공감!")'>👍</span></div></div>`).join('');
-    }
-
+    // Select topic
     function selectTopic(topic) {
       selectedTopic = topic;
-      renderPosts();
+      loadPosts();
     }
 
-    renderChat();
+    // Initial load
+    loadChat();
   </script>
 </body>
 </html>
-
-<!-- Firebase App (필수) -->
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-<!-- Firestore -->
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyD...",
-    authDomain: "riemann-community.firebaseapp.com",
-    projectId: "riemann-community",
-    storageBucket: "riemann-community.appspot.com",
-    messagingSenderId: "1234567890",
-    appId: "1:1234567890:web:abcdef"
-  };
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-</script>
 
