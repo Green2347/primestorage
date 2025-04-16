@@ -12,6 +12,7 @@
     .chat-message { margin-bottom: 5px; }
     input, textarea { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; }
     button { padding: 8px 12px; }
+    #chatMessagesContainer { max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 6px; background: #f9f9f9; }
   </style>
 </head>
 <body>
@@ -29,7 +30,9 @@
   <hr>
   <h2>💬 Topic Chat</h2>
   <div class="chat-box">
-    <div id="chatMessages"></div>
+    <div id="chatMessagesContainer">
+      <div id="chatMessages"></div>
+    </div>
     <input id="chatNickname" placeholder="Your nickname">
     <input id="chatInput" placeholder="Type a message...">
     <button onclick="submitChat()">Send</button>
@@ -87,6 +90,8 @@
       const chatBox = document.getElementById('chatMessages');
       chatBox.innerHTML = chatMessages.map(c => `<div class='chat-message'><strong>${c.nickname}</strong>: ${c.message}</div>`).join('');
     }
+
+    renderChat(); // 초기화면에 빈 채팅 메시지 박스를 보여주기 위해 추가
   </script>
 </body>
 </html>
