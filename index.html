@@ -69,8 +69,7 @@
 
     let posts = [];
     let chatMessages = [];
-    let selectedTopic = '';
-    let promptNickname = '';
+    let selectedTopic = ''; // Store selected topic
 
     // Submit a post
     function submitPost() {
@@ -133,7 +132,7 @@
     function renderPosts() {
       const postArea = document.getElementById('posts');
       postArea.innerHTML = '';
-      posts.forEach((p, index) => {
+      posts.filter(p => p.topic === selectedTopic).forEach((p, index) => {
         let postHTML = `<div class='post-box'>
           <div class='post'><strong>${p.nickname}</strong> (${p.date})<br>${p.content}</div>
           <div class='comment-box'>
@@ -163,8 +162,8 @@
 
     // Select topic
     function selectTopic(topic) {
-      selectedTopic = topic;
-      loadPosts();
+      selectedTopic = topic; // Update selected topic
+      loadPosts(); // Load posts for the selected topic
     }
 
     // Initial load
@@ -172,4 +171,3 @@
   </script>
 </body>
 </html>
-
