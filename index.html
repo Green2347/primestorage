@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCYWqv4Odpcy_Dvk3AZT_wKCFuBqhtvAeI",
+    authDomain: "primenumber-study.firebaseapp.com",
+    projectId: "primenumber-study",
+    storageBucket: "primenumber-study.firebasestorage.app",
+    messagingSenderId: "797472595550",
+    appId: "1:797472595550:web:814c082c266be5e423decf",
+    measurementId: "G-WEFY4L52NG"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+
   // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
