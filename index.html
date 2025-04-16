@@ -1,15 +1,92 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Riemann Hypothesis Blog</title>
+  <meta charset="UTF-8">
+  <title>Community Blog: Riemann Hypothesis</title>
+  <style>
+    body { font-family: sans-serif; margin: 40px; }
+    .post-box, .chat-box, .comment-box { border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+    .post { margin-bottom: 10px; }
+    .meta { font-size: 0.9em; color: gray; }
+    .comment { margin-top: 10px; padding-left: 10px; border-left: 2px solid #eee; }
+    .chat-message { margin-bottom: 5px; }
+    input, textarea { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; }
+    button { padding: 8px 12px; }
+  </style>
 </head>
 <body>
-    <h1>Riemann Hypothesis and Mathematical Insights</h1>
-    <p>Explore the mysteries of the Riemann Hypothesis, its roots in complex analysis and number theory, and its implications for modern mathematics.</p>
-    <ul>
-        <li><a href="posts/riemann.html">Introduction to the Riemann Hypothesis</a></li>
-    </ul>
+  <h1>📘 Riemann Hypothesis Community Page</h1>
+
+  <div class="post-box">
+    <h2>📝 Submit a Post</h2>
+    <input id="nickname" placeholder="Your nickname">
+    <textarea id="postContent" placeholder="Write your thoughts here..."></textarea>
+    <button onclick="submitPost()">Post</button>
+  </div>
+
+  <div id="posts"></div>
+
+  <hr>
+  <h2>💬 Topic Chat</h2>
+  <div class="chat-box">
+    <div id="chatMessages"></div>
+    <input id="chatNickname" placeholder="Your nickname">
+    <input id="chatInput" placeholder="Type a message...">
+    <button onclick="submitChat()">Send</button>
+  </div>
+
+  <script>
+    let posts = [];
+    let chatMessages = [];
+
+    function submitPost() {
+      const nickname = document.getElementById('nickname').value.trim();
+      const content = document.getElementById('postContent').value.trim();
+      const date = new Date().toLocaleString();
+      if (!nickname || !content) return alert("Please enter a nickname and content.");
+      posts.push({ nickname, content, date, comments: [] });
+      document.getElementById('postContent').value = "";
+      renderPosts();
+    }
+
+    function renderPosts() {
+      const postArea = document.getElementById('posts');
+      postArea.innerHTML = '';
+      posts.forEach((p, index) => {
+        let postHTML = `<div class='post-box'>
+          <div class='post'><strong>${p.nickname}</strong> (${p.date})<br>${p.content}</div>
+          <div class='comment-box'>
+            <textarea id='comment-${index}' placeholder='Write a comment...'></textarea>
+            <button onclick='addComment(${index})'>Comment</button>
+            ${p.comments.map(c => `<div class='comment'><strong>${c.nickname}</strong> (${c.date}${c.edited ? ', 수정됨' : ''})<br>${c.text}</div>`).join('')}
+          </div>
+        </div>`;
+        postArea.innerHTML += postHTML;
+      });
+    }
+
+    function addComment(postIndex) {
+      const text = document.getElementById(`comment-${postIndex}`).value.trim();
+      const nickname = prompt("닉네임을 입력하세요:");
+      const date = new Date().toLocaleString();
+      if (!text || !nickname) return;
+      posts[postIndex].comments.push({ nickname, text, date, edited: false });
+      renderPosts();
+    }
+
+    function submitChat() {
+      const nickname = document.getElementById('chatNickname').value.trim();
+      const message = document.getElementById('chatInput').value.trim();
+      if (!nickname || !message) return alert("닉네임과 메시지를 입력해주세요.");
+      chatMessages.push({ nickname, message });
+      document.getElementById('chatInput').value = "";
+      renderChat();
+    }
+
+    function renderChat() {
+      const chatBox = document.getElementById('chatMessages');
+      chatBox.innerHTML = chatMessages.map(c => `<div class='chat-message'><strong>${c.nickname}</strong>: ${c.message}</div>`).join('');
+    }
+  </script>
 </body>
 </html>
