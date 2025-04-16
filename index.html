@@ -8,22 +8,31 @@
     .post-box, .chat-box, .comment-box { border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
     .post { margin-bottom: 10px; }
     .meta { font-size: 0.9em; color: gray; }
-    .comment { margin-top: 10px; padding-left: 10px; border-left: 2px solid #eee; }
-    .chat-message { margin-bottom: 5px; }
+    .comment { margin-top: 10px; padding-left: 10px; border-left: 2px solid #eee; position: relative; }
+    .comment-actions { font-size: 0.8em; position: absolute; right: 5px; top: 5px; display: flex; gap: 5px; }
+    .comment-button { font-size: 0.8em; padding: 2px 6px; cursor: pointer; }
+    .chat-message { margin-bottom: 5px; position: relative; }
+    .chat-actions { font-size: 0.8em; position: absolute; right: 5px; top: 2px; display: flex; gap: 5px; }
     input, textarea { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; }
     button { padding: 8px 12px; }
     #chatMessagesContainer { max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 6px; background: #f9f9f9; }
+    h2.title-small { font-size: 1.2em; color: #444; }
+    .section-title { color: #0066cc; text-decoration: underline; cursor: pointer; margin-bottom: 10px; display: inline-block; }
   </style>
 </head>
 <body>
   <h1>📘 Riemann Hypothesis Community Page</h1>
 
   <div class="post-box">
-    <h2>📝 Submit a Post</h2>
+    <h2 class="title-small">📝 Area of Comments</h2>
     <input id="nickname" placeholder="Your nickname">
     <textarea id="postContent" placeholder="Write your thoughts here..."></textarea>
     <button onclick="submitPost()">Post</button>
   </div>
+
+  <div class="section-title" onclick="selectTopic('riemann')">▶ Riemann Hypothesis</div><br>
+  <div class="section-title" onclick="selectTopic('complex')">▶ Introduction to Complex Analysis</div><br>
+  <div class="section-title" onclick="selectTopic('number')">▶ Connection with Number Theory</div><br>
 
   <div id="posts"></div>
 
@@ -41,13 +50,14 @@
   <script>
     let posts = [];
     let chatMessages = [];
+    let selectedTopic = '';
 
     function submitPost() {
       const nickname = document.getElementById('nickname').value.trim();
       const content = document.getElementById('postContent').value.trim();
       const date = new Date().toLocaleString();
       if (!nickname || !content) return alert("Please enter a nickname and content.");
-      posts.push({ nickname, content, date, comments: [] });
+      posts.push({ topic: selectedTopic, nickname, content, date, comments: [] });
       document.getElementById('postContent').value = "";
       renderPosts();
     }
@@ -55,13 +65,18 @@
     function renderPosts() {
       const postArea = document.getElementById('posts');
       postArea.innerHTML = '';
-      posts.forEach((p, index) => {
+      posts.filter(p => p.topic === selectedTopic).forEach((p, index) => {
         let postHTML = `<div class='post-box'>
           <div class='post'><strong>${p.nickname}</strong> (${p.date})<br>${p.content}</div>
           <div class='comment-box'>
             <textarea id='comment-${index}' placeholder='Write a comment...'></textarea>
             <button onclick='addComment(${index})'>Comment</button>
-            ${p.comments.map(c => `<div class='comment'><strong>${c.nickname}</strong> (${c.date}${c.edited ? ', 수정됨' : ''})<br>${c.text}</div>`).join('')}
+            ${p.comments.map((c, i) => `<div class='comment'><strong>${c.nickname}</strong> (${c.date}${c.edited ? ', 수정됨' : ''})<br>${c.text}
+              <div class='comment-actions'>
+                <span class='comment-button' onclick='likeComment(${index}, ${i})'>👍</span>
+                ${c.nickname === promptNickname ? `<span class='comment-button' onclick='editComment(${index}, ${i})'>✏️</span><span class='comment-button' onclick='deleteComment(${index}, ${i})'>🗑️</span>` : ''}
+              </div>
+            </div>`).join('')}
           </div>
         </div>`;
         postArea.innerHTML += postHTML;
@@ -77,6 +92,26 @@
       renderPosts();
     }
 
+    function likeComment(postIdx, commentIdx) {
+      alert('공감 버튼이 눌렸습니다.');
+    }
+
+    function editComment(postIdx, commentIdx) {
+      const newText = prompt("댓글을 수정하세요:", posts[postIdx].comments[commentIdx].text);
+      if (newText) {
+        posts[postIdx].comments[commentIdx].text = newText;
+        posts[postIdx].comments[commentIdx].edited = true;
+        renderPosts();
+      }
+    }
+
+    function deleteComment(postIdx, commentIdx) {
+      if (confirm("댓글을 삭제하시겠습니까?")) {
+        posts[postIdx].comments.splice(commentIdx, 1);
+        renderPosts();
+      }
+    }
+
     function submitChat() {
       const nickname = document.getElementById('chatNickname').value.trim();
       const message = document.getElementById('chatInput').value.trim();
@@ -88,10 +123,16 @@
 
     function renderChat() {
       const chatBox = document.getElementById('chatMessages');
-      chatBox.innerHTML = chatMessages.map(c => `<div class='chat-message'><strong>${c.nickname}</strong>: ${c.message}</div>`).join('');
+      chatBox.innerHTML = chatMessages.map((c, i) => `<div class='chat-message'><strong>${c.nickname}</strong>: ${c.message}<div class='chat-actions'><span class='comment-button' onclick='alert("공감!")'>👍</span></div></div>`).join('');
     }
 
-    renderChat(); // 초기화면에 빈 채팅 메시지 박스를 보여주기 위해 추가
+    function selectTopic(topic) {
+      selectedTopic = topic;
+      renderPosts();
+    }
+
+    renderChat();
   </script>
 </body>
 </html>
+
